@@ -10,7 +10,7 @@ export TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=true # for PyTorch >= 2.6
 
 NUM_NODES=${WORLD_SIZE:-1}
 NODE_RANK=${RANK:-0}
-GPUS_PER_NODE=${KUBERNETES_CONTAINER_RESOURCE_GPU:-8}
+GPUS_PER_NODE=${KUBERNETES_CONTAINER_RESOURCE_GPU:-1}
 MASTER_ADDR=${MASTER_ADDR:-localhost}
 MASTER_PORT=${MASTER_PORT:-6000}
 
@@ -109,7 +109,7 @@ if [ $MODEL_SIZE = 0.5B ]; then
         --padded-vocab-size 151936
         --norm-epsilon 1e-6
     )
-    if [ -z  "$MODEL_PARALLEL_ARGS" ]; then
+    if [ -z "${MODEL_PARALLEL_ARGS}" ]; then
         MODEL_PARALLEL_ARGS=(
             --tensor-model-parallel-size 1
             --pipeline-model-parallel-size 4
@@ -126,7 +126,7 @@ elif [ $MODEL_SIZE = 1.5B ]; then
         --padded-vocab-size 151936
         --norm-epsilon 1e-6
     )
-    if [ -z  "$MODEL_PARALLEL_ARGS" ]; then
+    if [ -z "${MODEL_PARALLEL_ARGS}" ]; then
         MODEL_PARALLEL_ARGS=(
             --tensor-model-parallel-size 1
             --pipeline-model-parallel-size 4
@@ -143,7 +143,7 @@ elif [ $MODEL_SIZE = 3B ]; then
         --padded-vocab-size 151936
         --norm-epsilon 1e-6
     )
-    if [ -z  "$MODEL_PARALLEL_ARGS" ]; then
+    if [ -z "${MODEL_PARALLEL_ARGS}" ]; then
         MODEL_PARALLEL_ARGS=(
             --tensor-model-parallel-size 1
             --pipeline-model-parallel-size 4
@@ -158,10 +158,11 @@ elif [ $MODEL_SIZE = 7B ]; then
         --untie-embeddings-and-output-weights
         --num-query-groups 4
         --max-position-embeddings 131072
-        --padded-vocab-size 152064
+        --make-vocab-size-divisible-by 512
+        # --padded-vocab-size 152064 (unsupported by convert.py; removed)
         --norm-epsilon 1e-6
     )
-    if [ -z  "$MODEL_PARALLEL_ARGS" ]; then
+    if [ -z "${MODEL_PARALLEL_ARGS}" ]; then
         MODEL_PARALLEL_ARGS=(
             --tensor-model-parallel-size 1
             --pipeline-model-parallel-size 4
@@ -176,10 +177,10 @@ elif [ $MODEL_SIZE = 14B ]; then
         --untie-embeddings-and-output-weights
         --num-query-groups 8
         --max-position-embeddings 131072
-        --padded-vocab-size 152064
+        # --padded-vocab-size 152064 (unsupported by convert.py; removed)
         --norm-epsilon 1e-5
     )
-    if [ -z  "$MODEL_PARALLEL_ARGS" ]; then
+    if [ -z "${MODEL_PARALLEL_ARGS}" ]; then
         MODEL_PARALLEL_ARGS=(
             --tensor-model-parallel-size 1
             --pipeline-model-parallel-size 8
@@ -194,10 +195,10 @@ elif [ $MODEL_SIZE = 32B ]; then
         --untie-embeddings-and-output-weights
         --num-query-groups 8
         --max-position-embeddings 131072
-        --padded-vocab-size 152064
+        # --padded-vocab-size 152064 (unsupported by convert.py; removed)
         --norm-epsilon 1e-5
     )
-    if [ -z  "$MODEL_PARALLEL_ARGS" ]; then
+    if [ -z "${MODEL_PARALLEL_ARGS}" ]; then
         MODEL_PARALLEL_ARGS=(
             --tensor-model-parallel-size 1
             --pipeline-model-parallel-size 8
@@ -212,10 +213,10 @@ elif [ $MODEL_SIZE = 72B ]; then
         --untie-embeddings-and-output-weights
         --num-query-groups 8
         --max-position-embeddings 131072
-        --padded-vocab-size 152064
+        # --padded-vocab-size 152064 (unsupported by convert.py; removed)
         --norm-epsilon 1e-5
     )
-    if [ -z  "$MODEL_PARALLEL_ARGS" ]; then
+    if [ -z "${MODEL_PARALLEL_ARGS}" ]; then
         MODEL_PARALLEL_ARGS=(
             --tensor-model-parallel-size 1
             --pipeline-model-parallel-size 8
@@ -248,12 +249,14 @@ EVAL_AND_LOGGING_ARGS=(
 )
 
 CONVERT_ARGS=(
-    --model-type GPT 
+    --model-type GPT
     --load-dir ${LOAD_DIR}
     --save-dir ${SAVE_DIR}
     --no-load-optim
     --no-load-rng
     --logging-level 1
+    --synchronizer general
+    --pretrain-script qwen2_5.model_provider
 )
 
 cmd="torchrun ${DISTRIBUTED_ARGS[@]} impl/convert.py \

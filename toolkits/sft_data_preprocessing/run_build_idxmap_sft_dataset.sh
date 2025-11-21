@@ -1,9 +1,10 @@
 #! /bin/bash
 START_TIME=$SECONDS
 
-CURRENT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+CURRENT_DIR="/opt/aps/workdir/input/file/pretrain-linear-moe/lvzhihao/megatron-for-agent/Pai-Megatron-Patch/toolkits/sft_data_preprocessing"
+cd $CURRENT_DIR
 MEGATRON_PATCH_PATH=$(dirname $( dirname ${CURRENT_DIR}))
-export PYTHONPATH=$PYTHONPATH:${MEGATRON_PATCH_PATH}:${MEGATRON_PATCH_PATH}/backends/megatron/PAI-Megatron-LM-240718
+export PYTHONPATH=$PYTHONPATH:${MEGATRON_PATCH_PATH}:"/opt/aps/workdir/input/file/pretrain-linear-moe/lvzhihao/megatron-for-agent/YuLan-Pretrain"
 
 
 

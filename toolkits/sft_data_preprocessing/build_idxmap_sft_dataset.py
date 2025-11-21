@@ -152,6 +152,8 @@ class Encoder(object):
         label_ids = []
 
         pad_token_id = self.tokenizer.pad_token_id
+        # print("Tokenizer 的 pad_token_id 是：", pad_token_id)
+        # print("pad_token_id 解码之后是：", self.tokenizer.convert_tokens_to_ids("<|extra_0|>")) 151665
         end_of_text_id = self.tokenizer.convert_tokens_to_ids("<|endoftext|>")
         im_start_id = self.tokenizer.convert_tokens_to_ids("<|im_start|>")
         im_end_id = self.tokenizer.convert_tokens_to_ids("<|im_end|>")
@@ -222,7 +224,6 @@ class Encoder(object):
             if len(all_ids) > self.seq_length:
                 all_ids = all_ids[:self.seq_length]
                 y_ids = y_ids[:self.seq_length]
-
             # 3. Megatron-LM 风格的文档结束标记
             # 对这一条数据的最后一个 Token (通常是 EOT，或者是被截断后的最后一个 token) 取负
             all_ids[-1] = -1 - all_ids[-1]
